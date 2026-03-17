@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Local Music to Spotify — Dashboard</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+<div class="layout">
+
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-logo">
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+      </svg>
+      <span>Local → Spotify</span>
+    </div>
+
+    <nav>
+      <div class="nav-item" data-page="create" onclick="showPage('create')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+        </svg>
+        Create Playlist
+      </div>
+      <div class="nav-item" data-page="history" onclick="showPage('history')">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/>
+        </svg>
+        My Playlists
+      </div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="user-chip">
+        <div class="user-avatar" id="sidebarAvatar">?</div>
+        <div class="user-info">
+          <div class="name" id="sidebarUsername">Loading…</div>
+          <div class="role">Member</div>
+        </div>
+        <button class="logout-btn" onclick="logout()" title="Log out">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M17 7l-1.41 1.41L18.17 11H8v2h10.17l-2.58 2.58L17 17l5-5-5-5zM4 5h8V3H4c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h8v-2H4V5z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Create Playlist page -->
+    <div class="page" id="page-create">
+      <div class="page-header">
+        <h1>Create Playlist</h1>
+        <p>Select a local folder to turn your music files into a Spotify playlist</p>
+      </div>
+
+      <!-- Spotify banner -->
+      <div class="spotify-banner" id="spotifyBanner">
+        <div class="spotify-banner-left">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="currentColor">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 14.5v-9l6 4.5-6 4.5z"/>
+          </svg>
+          <div>
+            <div class="title">Checking Spotify…</div>
+            <div class="desc">Please wait</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Form -->
+      <div class="card">
+        <div class="card-title">Step 1 — Select your music folder</div>
+
+        <div class="drop-zone" id="dropZone" onclick="document.getElementById('dirInput').click()">
+          <input type="file" id="dirInput" webkitdirectory multiple
+                 onchange="handleFiles(this.files)" onclick="event.stopPropagation()">
+          <div class="icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="currentColor" style="opacity:.4">
+              <path d="M10 4H4c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/>
+            </svg>
+          </div>
+          <p>Click to select a folder</p>
+          <p style="font-size:0.78rem;color:#555;margin-top:4px">Supports MP3, FLAC, WAV, M4A, OGG, AAC, WMA, OPUS and more</p>
+          <div class="file-count" id="fileCount"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Step 2 — Name and create</div>
+        <div class="create-form">
+          <div class="inline-row">
+            <div class="form-group">
+              <label>Playlist Name</label>
+              <input type="text" id="playlistName" placeholder="My Local Library" maxlength="100">
+            </div>
+            <button class="btn btn-primary" id="createBtn" onclick="createPlaylist()" style="width:auto;white-space:nowrap">
+              Create Playlist
+            </button>
+          </div>
+
+          <div id="progressWrap" style="display:none">
+            <p style="font-size:0.8rem;color:var(--muted)">Searching Spotify for your tracks…</p>
+            <div class="progress-bar-wrap">
+              <div class="progress-bar" id="progressBar"></div>
+            </div>
+          </div>
+
+          <div class="result-box" id="resultBox"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- History page -->
+    <div class="page" id="page-history">
+      <div class="page-header">
+        <h1>My Playlists</h1>
+        <p>Playlists you've created through this app</p>
+      </div>
+
+      <div class="stats-row">
+        <div class="stat-card">
+          <div class="value" id="statPlaylists">—</div>
+          <div class="label">Playlists created</div>
+        </div>
+        <div class="stat-card">
+          <div class="value" id="statTracks">—</div>
+          <div class="label">Total tracks added</div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Playlist history</div>
+        <div class="playlist-list" id="playlistHistory">
+          <div class="empty-state"><p>Loading…</p></div>
+        </div>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script src="/static/js/auth.js"></script>
+<script src="/static/js/dashboard.js"></script>
+</body>
+</html>
